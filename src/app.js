@@ -2,7 +2,7 @@ import express from "express";
 import { pool } from "./db.js";
 import { hashPassword } from "./hashPassword.js";
 import bcrypt from "bcryptjs";
-import {PORT} from './config.js'
+import { PORT } from "./config.js";
 
 const app = express();
 app.use(express.json());
@@ -33,7 +33,7 @@ app.post("/classes", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Error al obtener las clases" });
   }
-});  
+});
 
 //Obtener usuario
 app.post("/user", async (req, res) => {
@@ -127,17 +127,24 @@ app.post("/classes/:id/add-user", async (req, res) => {
       return res.status(400).json({ error: "La clase ya está llena" });
     }
 
-    // Verificar si el usuario ya está apuntado
-    const [existing] = await pool.query(
-      `SELECT * FROM class_users WHERE class_id = ? AND user_id = ?`,
-      [classId, user_id]
-    );
+    // Comprobar si un usuario está apuntado a una clase
+    app.post("/classes/:id/check-user", async (req, res) => {
+      try {
+        const classId = req.params.id;
+        const { user_id } = req.body;
 
-    if (existing.length > 0) {
-      return res
-        .status(400)
-        .json({ error: "El usuario ya está apuntado a esta clase" });
-    }
+        const [rows] = await pool.query(
+          `SELECT * FROM class_users WHERE class_id = ? AND user_id = ?`,
+          [classId, user_id]
+        );
+
+        const reservado = rows.length > 0;
+        res.json({ reservado });
+      } catch (error) {
+        console.error("Error comprobando usuario en clase:", error);
+        res.status(500).json({ error: "Error del servidor" });
+      }
+    });
 
     // Insertar en la tabla intermedia
     const [insertResult] = await pool.query(
