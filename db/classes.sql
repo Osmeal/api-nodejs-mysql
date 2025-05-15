@@ -3,6 +3,7 @@ CREATE TABLE classes (
     gym_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
     instructor VARCHAR(100) NOT NULL,
+    users INT NOT NULL,
     capacity INT NOT NULL,
     start_time DATETIME NOT NULL,
     finish_time DATETIME NOT NULL,

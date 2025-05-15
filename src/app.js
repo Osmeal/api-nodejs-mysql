@@ -20,7 +20,7 @@ app.get("/", async (req, res) => {
 });
 
 //Lista clases
-app.get("/classes", async (req, res) => {
+app.post("/classes", async (req, res) => {
   try {
     const { gym_id } = req.body;
 
@@ -33,7 +33,7 @@ app.get("/classes", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Error al obtener las clases" });
   }
-});
+});  
 
 //Obtener usuario
 app.post("/user", async (req, res) => {
