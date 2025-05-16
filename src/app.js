@@ -337,5 +337,27 @@ app.get("/classes/:id/users", async (req, res) => {
   }
 });
 
+//Obtener horario********
+app.get("/schedule/:id", async (req, res) => {
+  const gymId = req.params.id;
+
+  try {
+    const [result] = await pool.query(
+      `SELECT schedule FROM gyms WHERE id = ?`,
+      [gymId]
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Gimnasio no encontrado" });
+    }
+
+    res.json(result[0]);
+  } catch (err) {
+    console.error("Error al obtener el horario:", err);
+    res.status(500).json({ error: "Error al obtener el horario" });
+  }
+});
+
+
 app.listen(PORT);
 console.log("Server on port", PORT);
