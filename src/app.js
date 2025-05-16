@@ -13,13 +13,13 @@ app.get("/ping", async (req, res) => {
   res.json(result);
 });
 
-//Lista gimnasios
+//Lista gimnasios********
 app.get("/", async (req, res) => {
   const [result] = await pool.query(`SELECT * FROM gyms`);
   res.json(result);
 });
 
-//Lista clases
+//Lista clases********
 app.post("/classes", async (req, res) => {
   try {
     const { gym_id } = req.body;
@@ -35,12 +35,12 @@ app.post("/classes", async (req, res) => {
   }
 });  
 
-//Obtener usuario
+//Obtener usuario********
 app.post("/user", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Paso 1: Buscar usuario por email
+    //Buscar usuario por email
     const [rows] = await pool.query(`SELECT * FROM users WHERE email = ?`, [
       email,
     ]);
@@ -51,14 +51,14 @@ app.post("/user", async (req, res) => {
 
     const user = rows[0];
 
-    // Paso 2: Comparar contraseña
+    //Comparar contraseña
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
 
-    // Paso 3: Devolver usuario (sin contraseña por seguridad)
+    //Devolver usuario (sin contraseña por seguridad)
     delete user.password;
 
     res.json({ message: "Usuario autenticado", user });
@@ -68,7 +68,7 @@ app.post("/user", async (req, res) => {
   }
 });
 
-//Añadir usuario
+//Añadir usuario********
 app.post("/users", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -88,7 +88,7 @@ app.post("/users", async (req, res) => {
   }
 });
 
-//Eliminar usuario
+//Eliminar usuario********
 app.delete("/users", async (req, res) => {
   try {
     const id = req.query.id;
@@ -102,7 +102,7 @@ app.delete("/users", async (req, res) => {
   }
 });
 
-//Añadir asistente a clase
+//Añadir asistente a clase********
 app.post("/classes/:id/add-user", async (req, res) => {
   try {
     const classId = req.params.id;
@@ -145,6 +145,12 @@ app.post("/classes/:id/add-user", async (req, res) => {
       [classId, user_id]
     );
 
+    // Sumar 1 al contador de usuarios en la tabla classes
+    await pool.query(
+      `UPDATE classes SET users = users + 1 WHERE id = ?`,
+      [classId]
+    );
+
     res.json({ message: "Usuario añadido a la clase", insertResult });
   } catch (err) {
     console.error(err);
@@ -152,7 +158,7 @@ app.post("/classes/:id/add-user", async (req, res) => {
   }
 });
 
-//Comprobar si usuario ya está apuntado
+//Comprobar si usuario ya está apuntado********
 app.post("/classes/:id/check-user", async (req, res) => {
   try {
     const classId = req.params.id;
@@ -171,7 +177,7 @@ app.post("/classes/:id/check-user", async (req, res) => {
   }
 });
 
-//Eliminar asistente a clase
+//Eliminar asistente a clase********
 app.delete("/classes/:id/remove-user", async (req, res) => {
   try {
     const classId = req.params.id;
@@ -204,6 +210,12 @@ app.delete("/classes/:id/remove-user", async (req, res) => {
       [classId, user_id]
     );
 
+    // Restar 1 al contador de users en la clase
+    await pool.query(
+      `UPDATE classes SET users = users - 1 WHERE id = ? AND users > 0`,
+      [classId]
+    );
+
     res.json({ message: "Usuario quitado de la clase", deleteResult });
   } catch (err) {
     console.error(err);
@@ -211,7 +223,7 @@ app.delete("/classes/:id/remove-user", async (req, res) => {
   }
 });
 
-//Añadir gimnasio
+//Añadir gimnasio********
 app.post("/gym", async (req, res) => {
   try {
     const { name, address, phone, photo } = req.body;
@@ -228,7 +240,7 @@ app.post("/gym", async (req, res) => {
   }
 });
 
-//Añadir clase
+//Añadir clase********
 app.post("/class", async (req, res) => {
   try {
     const {
@@ -263,7 +275,7 @@ app.post("/class", async (req, res) => {
   }
 });
 
-//Eliminar gimnasio
+//Eliminar gimnasio********
 app.delete("/gym", async (req, res) => {
   try {
     const id = req.query.id;
@@ -277,7 +289,7 @@ app.delete("/gym", async (req, res) => {
   }
 });
 
-//Eliminar clase
+//Eliminar clase********
 app.delete("/class", async (req, res) => {
   try {
     const id = req.query.id;
@@ -291,7 +303,7 @@ app.delete("/class", async (req, res) => {
   }
 });
 
-//Obtener usuarios de una clase
+//Obtener usuarios de una clase********
 app.get("/classes/:id/users", async (req, res) => {
   try {
     const classId = req.params.id;
@@ -325,6 +337,5 @@ app.get("/classes/:id/users", async (req, res) => {
   }
 });
 
-//Quitar columna users de classes
 app.listen(PORT);
 console.log("Server on port", PORT);
